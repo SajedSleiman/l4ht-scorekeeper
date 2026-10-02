@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "l4ht"
+description = "A private, phone-first local scorekeeper for Leekha, Hand, 400, and Tarneb. Add players, record round-by-round scores, and keep match history on the device."
+version = "1.0.0"
+id = "artifacts/l4ht"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24829
+
+[services.development]
+run = "pnpm --filter @workspace/l4ht run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/l4ht", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/l4ht/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24829"
+BASE_PATH = "/"

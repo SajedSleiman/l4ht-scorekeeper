@@ -1,45 +1,33 @@
-# [Project name]
+# l4ht
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A phone-first scorekeeper for Leekha, Hand, 400, and Tarneb. Players enter scores round by round, with running totals saved on the device.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/l4ht run dev` — start the Angular development server
+- `pnpm --filter @workspace/l4ht run build` — create the production web build
+- `pnpm --filter @workspace/l4ht run typecheck` — compile the Angular app and templates
+- `pnpm --filter @workspace/l4ht run ios:prepare` — build the web app and sync it into the Capacitor iOS project
+- Open `artifacts/l4ht/ios/App/App.xcodeproj` on macOS to run the app from Xcode on an iPhone
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Angular standalone components, TypeScript, and Angular Service Worker
+- Capacitor iOS wrapper for running the same app as a native iPhone app
+- pnpm workspace
+- Angular 20 is used because the managed Node.js runtime is 24.13.0; update the runtime before moving to a newer Angular major
 
-## Where things live
+## Product & Data
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- Games: Leekha, Hand, 400, and Tarneb
+- Add, rename, and remove players; create, edit, and remove rounds; enter signed numeric scores; calculate running totals
+- Scores and match history are stored only in browser local storage. The iOS app uses its local web view storage; data does not sync to another device or server.
+- Clearing the app's site data or removing the iOS app can erase saved matches.
+- No backend or database is used for score data.
 
-## Architecture decisions
+## Where Things Live
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- `artifacts/l4ht/src/app.component.*` — score sheet UI and local match behavior
+- `artifacts/l4ht/src/main.ts` — Angular bootstrap and service-worker registration
+- `artifacts/l4ht/angular.json` — Angular build and development-server configuration
+- `artifacts/l4ht/capacitor.config.ts` and `artifacts/l4ht/ios/` — iPhone wrapper and Xcode project

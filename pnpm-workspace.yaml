@@ -75,6 +75,8 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 overrides:
+  # Angular 20's exact piscina pin is blocked by the package firewall; 5.3.2 is a compatible patch release.
+  "@angular/build>piscina": "5.3.2"
   # replit uses linux-x64 only, we can exclude all other platforms
   "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"

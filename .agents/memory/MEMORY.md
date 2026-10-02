@@ -1,0 +1,1 @@
+- [Angular runtime compatibility](angular-runtime-compatibility.md) — l4ht’s Angular/Capacitor toolchain is pinned to the managed Node runtime.
