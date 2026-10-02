@@ -1,1 +1,2 @@
 - [Angular runtime compatibility](angular-runtime-compatibility.md) — l4ht’s Angular/Capacitor toolchain is pinned to the managed Node runtime.
+- [Angular CDP readiness](angular-cdp-verification.md) — wait for Angular-rendered selectors before interacting; CDP navigation may complete before bootstrap.
