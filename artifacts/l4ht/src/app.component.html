@@ -1,382 +1,1394 @@
-<main class="app-shell">
-  <header class="topbar">
-    <button class="brand" type="button" (click)="backToMatches()" aria-label="Go to all matches">
-      <span class="brand-mark">L</span>
-      <span class="brand-word">l4ht<span class="brand-period">.</span></span>
-    </button>
-    <div class="topbar-note"><span class="live-dot"></span> Score the way your table plays</div>
-    <div class="local-badge"><span class="lock-icon" aria-hidden="true">▣</span> Saved on this device</div>
-  </header>
+<main class="app">
 
-  <div class="workspace">
-    <aside class="match-rail" [class.rail-hidden]="activeMatch">
-      <div class="rail-heading">
-        <div>
-          <p class="eyebrow">THE SCORE SHEET</p>
-          <h1>Your matches<span class="heading-count">{{ matches.length ? ' · ' + matches.length : '' }}</span></h1>
-        </div>
-        <button class="icon-button" type="button" (click)="openNewMatch()" aria-label="Create a match">+</button>
-      </div>
+  <!-- ========================================================= -->
+  <!-- MATCH SCREEN                                              -->
+  <!-- ========================================================= -->
 
-      <button class="start-card" type="button" (click)="openNewMatch()">
-        <span class="start-symbol">+</span>
-        <span><strong>Start a new match</strong><small>Choose a game and set the table</small></span>
-        <span class="arrow-mark">↗</span>
+  <ng-container *ngIf="activeMatch as match; else matchList">
+
+    <header class="bar">
+
+      <button
+        class="icon-btn"
+        type="button"
+        (click)="backToMatches()"
+        aria-label="Back">
+        ←
       </button>
 
-      <div class="list-label"><span>RECENT TABLES</span><span class="list-rule"></span></div>
-      <div class="match-list" *ngIf="matches.length; else noMatches">
-        <div class="match-item" *ngFor="let match of matches" role="button" tabindex="0"
-          [class.is-selected]="activeMatch?.id === match.id" (click)="selectMatch(match)"
-          (keydown.enter)="selectMatch(match)" (keydown.space)="$event.preventDefault(); selectMatch(match)">
-          <span class="game-stamp">{{ match.game.slice(0, 1) }}</span>
-          <span class="match-copy">
-            <strong>{{ match.game }}</strong>
-            <small>{{ formatDate(match.createdAt) }} <i>·</i> {{ match.rounds.length }} {{ match.rounds.length === 1 ? 'round' : 'rounds' }}</small>
-          </span>
-          <span class="item-total">{{ match.players.length }}P</span>
-          <button class="delete-match" type="button" aria-label="Delete match"
-            (click)="requestDeleteMatch(match, $event)" (keydown.enter)="requestDeleteMatch(match, $event)">×</button>
-        </div>
-      </div>
-      <ng-template #noMatches>
-        <div class="rail-empty"><span class="empty-line"></span><p>No score sheets yet.</p><small>Your next table starts here.</small></div>
-      </ng-template>
+      <div class="bar-title">
+        <strong>{{ match.game }}</strong>
 
-      <footer class="rail-footer">
-        <span class="footer-seal">L</span>
-        <span>Made for the long game.<br><small>Private by nature. Always.</small></span>
-      </footer>
-    </aside>
-
-    <section class="main-stage" *ngIf="activeMatch as match; else landing">
-      <div class="match-toolbar">
-        <button class="back-link" type="button" (click)="backToMatches()"><span>←</span> All matches</button>
-        <div class="toolbar-meta"><span class="privacy-dot"></span> Only on this device</div>
-        <button class="more-button" type="button" (click)="requestDeleteMatch(match)" aria-label="Delete this match">Delete match</button>
+        <small>
+          {{ formatDate(match.createdAt) }}
+          ·
+          {{ match.rounds.length }}
+          {{ match.rounds.length === 1 ? 'round' : 'rounds' }}
+        </small>
       </div>
 
-      <section class="match-intro">
-        <div class="intro-copy">
-          <div class="game-kicker"><span class="kicker-dash"></span> THE TABLE IS SET <span class="kicker-date">{{ formatDate(match.createdAt) }}</span></div>
-          <h2>{{ match.game }}<span class="title-period">.</span></h2>
-          <p class="intro-subtitle">{{ ruleSummary(match.game) }}</p>
-        </div>
-        <div class="round-counter">
-          <span class="counter-number">{{ match.rounds.length | number:'2.0' }}</span>
-          <span class="counter-caption">ROUNDS<br>PLAYED</span>
-        </div>
-      </section>
+      <button
+      class="icon-btn warning"
+      type="button"
+      *ngIf="match.rounds.length"
+      (click)="requestClearAllRounds(match)"
+      title="Clear all rounds"
+      aria-label="Clear all rounds">
+      ↺
+    </button>
 
-      <section class="players-strip">
-        <div class="players-topline">
-          <div class="section-label"><span class="section-index">01</span><span>AT THE TABLE</span><span class="tiny-line"></span></div>
-          <button class="text-action" type="button" (click)="openAddPlayer()" [disabled]="!canAddPlayer(match)">
-            <span>+</span> {{ canAddPlayer(match) ? 'Add player' : 'Four players max' }}
-          </button>
-        </div>
-        <div class="players-content" *ngIf="match.players.length; else playersEmpty">
-          <div class="player-chip" *ngFor="let player of match.players; let i = index">
-            <span class="player-avatar" [class]="'player-avatar tone-' + (i % 5)">{{ player.name.trim().slice(0, 1).toUpperCase() }}</span>
-            <span class="player-name">{{ player.name }}</span>
-            <span class="out-chip" *ngIf="match.game === 'Leekha' && getLeekhaElimination(match, player.id) as out">
-              OUT · {{ out.total }}
+      <button
+        class="icon-btn danger"
+        type="button"
+        (click)="requestDeleteMatch(match)"
+        aria-label="Delete match">
+
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/>
+
+        </svg>
+
+      </button>
+
+    </header>
+
+
+    <!-- ========================================================= -->
+    <!-- SCOREBOARD                                                -->
+    <!-- ========================================================= -->
+
+    <section class="board" [class.open]="expanded">
+
+      <div
+        class="board-grid"
+        *ngIf="match.players.length"
+        [style.--cols]="match.game === 'Tarneb' ? 2 : match.players.length">
+
+        <!-- TARNEEB 2-TEAM BOARD -->
+        <ng-container *ngIf="match.game === 'Tarneb'; else standardBoard">
+          <div class="board-cell">
+            <span class="b-name">
+              {{ match.players[0]?.name }} & {{ match.players[2]?.name }}
             </span>
-            <button class="player-edit" type="button" (click)="openRenamePlayer(player)" [attr.aria-label]="'Rename ' + player.name">Edit</button>
-            <button class="player-remove" type="button" (click)="requestRemovePlayer(player)" [attr.aria-label]="'Remove ' + player.name">×</button>
+            <span class="b-score" [class.neg]="tarneebTeamScore(match, 0) < 0">
+              {{ tarneebTeamScore(match, 0) }}
+            </span>
           </div>
-        </div>
-        <ng-template #playersEmpty>
-          <button class="add-first-player" type="button" (click)="openAddPlayer()">
-            <span class="add-ring">+</span><span><strong>Who’s playing?</strong><small>Add the first name to your sheet</small></span><span class="arrow-mark">↗</span>
-          </button>
+
+          <div class="board-cell">
+            <span class="b-name">
+              {{ match.players[1]?.name }} & {{ match.players[3]?.name }}
+            </span>
+            <span class="b-score" [class.neg]="tarneebTeamScore(match, 1) < 0">
+              {{ tarneebTeamScore(match, 1) }}
+            </span>
+          </div>
+        </ng-container>
+
+        <!-- DEFAULT PLAYER BOARD -->
+        <ng-template #standardBoard>
+          <div
+            class="board-cell"
+            *ngFor="let player of match.players">
+
+            <span class="b-name">
+              {{ player.name }}
+            </span>
+
+            <span
+              class="b-score"
+              [class.neg]="(totals[player.id] || 0) < 0">
+
+              {{ totals[player.id] || 0 }}
+
+            </span>
+
+          </div>
         </ng-template>
-      </section>
 
-      <section class="contract-setup" *ngIf="isContractGame(match.game)">
-        <div class="setup-heading">
-          <div>
-            <div class="section-label"><span class="section-index">02</span><span>PARTNERS & FULL ROUND</span><span class="tiny-line"></span></div>
-            <p>Choose the two pairs once for this match.</p>
-          </div>
-        </div>
-        <div class="pair-grid">
-          <div class="pair-card team-a">
-            <span class="pair-label">TEAM A</span>
-            <select [ngModel]="teamPlayerId(match, 'A', 0)" (ngModelChange)="setTeamPlayer(match, 'A', 0, $event)" aria-label="Team A first player">
-              <option value="">Choose player</option>
-              <option *ngFor="let player of match.players" [value]="player.id"
-                [disabled]="isTeamSlotTaken(match, player.id, 'A', 0)">{{ player.name }}</option>
-            </select>
-            <span class="pair-plus">+</span>
-            <select [ngModel]="teamPlayerId(match, 'A', 1)" (ngModelChange)="setTeamPlayer(match, 'A', 1, $event)" aria-label="Team A partner">
-              <option value="">Choose partner</option>
-              <option *ngFor="let player of match.players" [value]="player.id"
-                [disabled]="isTeamSlotTaken(match, player.id, 'A', 1)">{{ player.name }}</option>
-            </select>
-          </div>
-          <div class="pair-card team-b">
-            <span class="pair-label">TEAM B</span>
-            <select [ngModel]="teamPlayerId(match, 'B', 0)" (ngModelChange)="setTeamPlayer(match, 'B', 0, $event)" aria-label="Team B first player">
-              <option value="">Choose player</option>
-              <option *ngFor="let player of match.players" [value]="player.id"
-                [disabled]="isTeamSlotTaken(match, player.id, 'B', 0)">{{ player.name }}</option>
-            </select>
-            <span class="pair-plus">+</span>
-            <select [ngModel]="teamPlayerId(match, 'B', 1)" (ngModelChange)="setTeamPlayer(match, 'B', 1, $event)" aria-label="Team B partner">
-              <option value="">Choose partner</option>
-              <option *ngFor="let player of match.players" [value]="player.id"
-                [disabled]="isTeamSlotTaken(match, player.id, 'B', 1)">{{ player.name }}</option>
-            </select>
-          </div>
-        </div>
-        <div class="full-round-setting">
-          <label for="full-round-value">FULL ROUND SCORE</label>
-          <input id="full-round-value" type="number" min="1" step="1" inputmode="numeric"
-            [value]="match.fullRoundValue ?? ''" (change)="setFullRoundValue(match, $any($event.target).value)"
-            placeholder="Set points">
-          <span>Used as the plus/minus value whenever a player selects Full Round.</span>
-        </div>
-        <p class="setup-warning" *ngIf="match.players.length !== 4">
-          Add exactly four players for 400 and Tarneb, then assign each player to one pair.
-        </p>
-        <p class="setup-warning" *ngIf="match.players.length === 4 && !hasValidTeams(match)">
-          Each player must appear in exactly one pair before you can start a round.
-        </p>
-      </section>
-
-      <div class="match-result leekha-result" *ngIf="match.game === 'Leekha' && getLeekhaStatusMessage(match)">
-        <span class="result-icon">!</span>
-        <span>{{ getLeekhaStatusMessage(match) }}</span>
-      </div>
-      <div class="match-result winner-result" *ngIf="isContractGame(match.game) && getWinner(match) as winner">
-        <span class="result-icon">✓</span>
-        <span>{{ getTeamWinMessage(match) }}</span>
       </div>
 
-      <section class="score-section">
-        <div class="score-heading">
-          <div>
-            <div class="section-label"><span class="section-index">03</span><span>RUNNING TOTALS</span><span class="tiny-line"></span></div>
-            <h3>The count so far<span class="title-period">.</span></h3>
-          </div>
-          <button class="add-round-button" type="button" (click)="addRound()" [disabled]="!canAddRound(match)">
-            <span>+</span> Add round
+
+      <button
+        class="add-first"
+        type="button"
+        *ngIf="!match.players.length"
+        (click)="openAddPlayer()">
+
+        + Add the first player
+
+      </button>
+
+
+      <button
+        class="board-toggle"
+        type="button"
+        (click)="expanded = !expanded"
+        [attr.aria-expanded]="expanded"
+        aria-label="Players and rounds">
+
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M6 9l6 6 6-6"/>
+
+        </svg>
+
+      </button>
+
+
+      <!-- ========================================================= -->
+      <!-- BOARD PANEL                                               -->
+      <!-- ========================================================= -->
+
+      <div
+        class="board-panel"
+        *ngIf="expanded">
+
+        <p class="panel-label">
+          Players
+        </p>
+
+        <div
+          class="manage-row"
+          *ngFor="let player of match.players">
+
+          <span class="m-name">
+            {{ player.name }}
+          </span>
+
+          <button
+            type="button"
+            class="m-btn"
+            (click)="openRenamePlayer(player)">
+
+            Rename
+
           </button>
+
+          <button
+            type="button"
+            class="m-btn m-danger"
+            (click)="requestRemovePlayer(player)">
+
+            Remove
+
+          </button>
+
         </div>
 
-        <div class="totals-grid" *ngIf="match.players.length">
-          <article class="total-card" *ngFor="let player of match.players; let i = index"
-            [class.player-out]="match.game === 'Leekha' && getLeekhaElimination(match, player.id)">
-            <div class="total-player">
-              <span class="player-avatar" [class]="'player-avatar tone-' + (i % 5)">{{ player.name.trim().slice(0, 1).toUpperCase() }}</span>
-              <span>{{ player.name }}</span>
-            </div>
-            <strong [class.negative]="(totals[player.id] || 0) < 0">{{ (totals[player.id] || 0) | number:'1.0-2' }}</strong>
-            <small *ngIf="match.game === 'Leekha' && getLeekhaElimination(match, player.id) as out">OUT AFTER {{ out.roundLabel | uppercase }}</small>
-            <small *ngIf="isContractGame(match.game) && hasValidTeams(match)">MATCH TOTAL</small>
-            <small *ngIf="!isContractGame(match.game) && match.game !== 'Leekha'">MATCH TOTAL</small>
-          </article>
-        </div>
 
-        <p class="completion-hint" *ngIf="getRoundCompletionHint(match)">{{ getRoundCompletionHint(match) }}</p>
-        <div class="rounds-empty" *ngIf="!match.rounds.length">
-          <div class="empty-score-art"><span class="paper-mark"></span><span class="paper-line l1"></span><span class="paper-line l2"></span><span class="paper-line l3"></span><span class="pencil-mark"></span></div>
-          <div class="empty-score-copy">
-            <p class="empty-kicker">{{ match.players.length ? 'READY WHEN YOU ARE' : 'FIRST, THE PLAYERS' }}</p>
-            <h4>{{ match.players.length ? 'A clean sheet.' : 'Set your table.' }}</h4>
-            <p>{{ match.players.length ? 'Enter the first round when the hand is done.' : 'Add the people playing before you start keeping score.' }}</p>
+        <button
+          class="ghost"
+          type="button"
+          (click)="openAddPlayer()"
+          [disabled]="!canAddPlayer(match)">
+
+          + Add player
+
+        </button>
+
+
+        <ng-container *ngIf="match.rounds.length">
+
+          <p class="panel-label">
+            Jump to round
+          </p>
+
+          <div class="round-chips">
+
+            <button
+              class="chip"
+              type="button"
+              *ngFor="let round of match.rounds; let i = index"
+              [class.on]="i === roundIdx"
+              (click)="goToRound(i)">
+
+              {{ i + 1 }}
+
+            </button>
+
           </div>
-        </div>
 
-        <div class="round-list" *ngIf="match.rounds.length">
-          <article class="round-card" *ngFor="let round of match.rounds; let i = index">
-            <header class="round-card-header">
-              <div class="round-title">
-                <span class="round-number">{{ (i + 1) | number:'2.0' }}</span>
-                <div>
-                  <button type="button" class="round-name" (click)="openEditRound(round)">{{ round.label }}</button>
-                  <small>{{ round.kind === 'legacy' ? 'Previous manual scores' : match.game + ' scoring' }}</small>
-                </div>
-              </div>
-              <div class="round-actions">
-                <span class="round-state" *ngIf="isRoundComplete(match, round)">SCORED</span>
-                <span class="round-state pending" *ngIf="!isRoundComplete(match, round)">IN PROGRESS</span>
-                <button type="button" class="round-delete" (click)="requestDeleteRound(round)">Remove</button>
-              </div>
-            </header>
+        </ng-container>
 
-            <div class="entry-grid">
-              <article class="player-entry" *ngFor="let player of match.players; let playerIndex = index"
-                [class.entry-out]="round.kind === 'leekha' && isPlayerOutBeforeRound(match, round, player.id)">
-                <header class="entry-player">
-                  <span class="player-avatar" [class]="'player-avatar tone-' + (playerIndex % 5)">{{ player.name.trim().slice(0, 1).toUpperCase() }}</span>
-                  <span>{{ player.name }}</span>
-                  <span class="running-mini">{{ (totals[player.id] || 0) | number:'1.0-2' }}</span>
-                </header>
+      </div>
 
-                <ng-container [ngSwitch]="round.kind">
-                  <div class="entry-controls" *ngSwitchCase="'leekha'">
-                    <div class="out-message" *ngIf="isPlayerOutBeforeRound(match, round, player.id); else leekhaEntry">
-                      Out after {{ getLeekhaElimination(match, player.id)?.roundLabel }}
-                    </div>
-                    <ng-template #leekhaEntry>
-                      <label class="input-label" [attr.for]="'hearts-' + round.id + '-' + player.id">HEARTS EATEN <span>+1 EACH</span></label>
-                      <input class="score-input" type="number" min="0" step="1" inputmode="numeric"
-                        [max]="availableHearts(round, player.id)"
-                        [attr.aria-label]="'Hearts eaten by ' + player.name + ' in ' + round.label"
-                        [value]="getLeekhaEntry(round, player.id)?.hearts ?? ''"
-                        (change)="setLeekhaHearts(round, player.id, $any($event.target).value)"
-                        [id]="'hearts-' + round.id + '-' + player.id" placeholder="0">
-                      <div class="heart-count">{{ totalHearts(round) }} / 13 hearts assigned</div>
-                      <div class="card-choices">
-                        <label class="card-toggle" [class.selected]="getLeekhaEntry(round, player.id)?.queenSpades">
-                          <input type="checkbox" [checked]="getLeekhaEntry(round, player.id)?.queenSpades"
-                            [disabled]="!canClaimSpecialCard(round, player.id, 'queenSpades')"
-                            (change)="setLeekhaCard(round, player.id, 'queenSpades', $any($event.target).checked)">
-                          <span>Q♠ <small>+13</small></span>
-                        </label>
-                        <label class="card-toggle" [class.selected]="getLeekhaEntry(round, player.id)?.tenDiamonds">
-                          <input type="checkbox" [checked]="getLeekhaEntry(round, player.id)?.tenDiamonds"
-                            [disabled]="!canClaimSpecialCard(round, player.id, 'tenDiamonds')"
-                            (change)="setLeekhaCard(round, player.id, 'tenDiamonds', $any($event.target).checked)">
-                          <span>10♦ <small>+10</small></span>
-                        </label>
-                      </div>
-                    </ng-template>
-                  </div>
-
-                  <div class="entry-controls" *ngSwitchCase="'hand'">
-                    <label class="input-label" [attr.for]="'hand-points-' + round.id + '-' + player.id">ROUND POINTS <span>CAN BE NEGATIVE</span></label>
-                    <input class="score-input" type="number" inputmode="decimal" step="any"
-                      [attr.aria-label]="'Round points for ' + player.name"
-                      [value]="getHandEntry(round, player.id)?.points ?? ''"
-                      (change)="setHandPoints(round, player.id, $any($event.target).value)"
-                      [id]="'hand-points-' + round.id + '-' + player.id" placeholder="0">
-                    <label class="input-label finish-label" [attr.for]="'finish-' + round.id + '-' + player.id">FINISH BONUS</label>
-                    <select class="finish-select" [ngModel]="getHandEntry(round, player.id)?.finish ?? 'none'"
-                      (ngModelChange)="setHandFinish(round, player.id, $event)"
-                      [attr.aria-label]="'Finish status for ' + player.name">
-                      <option value="none">No finish penalty</option>
-                      <option value="normal">Finished · −30</option>
-                      <option value="hand">Finished with a hand · −60</option>
-                    </select>
-                  </div>
-
-                  <div class="entry-controls" *ngSwitchCase="'contract'">
-                    <label class="input-label" [attr.for]="'bid-' + round.id + '-' + player.id">PLAYER BID</label>
-                    <select class="finish-select bid-select" [ngModel]="getBidEntry(round, player.id)?.bid ?? ''"
-                      (ngModelChange)="setBid(match, round, player.id, $event)"
-                      [attr.aria-label]="'Bid for ' + player.name">
-                      <option value="">Choose a bid</option>
-                      <option *ngFor="let bid of bids" [value]="bid.value">{{ bid.label }}</option>
-                    </select>
-                    <p class="full-round-hint" *ngIf="getBidEntry(round, player.id)?.bid === 'full' && match.fullRoundValue === null">
-                      Set the Full Round score above.
-                    </p>
-                    <div class="bid-result">
-                      <button type="button" [class.selected]="getBidEntry(round, player.id)?.made === true"
-                        [disabled]="!canMarkBid(match, round, player.id)"
-                        (click)="setBidOutcome(match, round, player.id, true)">Made</button>
-                      <button type="button" [class.selected]="getBidEntry(round, player.id)?.made === false"
-                        [disabled]="!canMarkBid(match, round, player.id)"
-                        (click)="setBidOutcome(match, round, player.id, false)">Missed</button>
-                    </div>
-                  </div>
-
-                  <div class="entry-controls legacy-controls" *ngSwitchDefault>
-                    <label class="input-label" [attr.for]="'legacy-' + round.id + '-' + player.id">SAVED ROUND SCORE</label>
-                    <input class="score-input" type="number" inputmode="decimal" step="any"
-                      [value]="round.entries[player.id] ?? ''"
-                      (change)="setScore(round, player.id, $any($event.target).value)"
-                      [attr.aria-label]="'Saved round score for ' + player.name"
-                      [id]="'legacy-' + round.id + '-' + player.id" placeholder="0">
-                  </div>
-                </ng-container>
-
-                <footer class="entry-score">
-                  <span>ROUND SCORE</span>
-                  <strong [class.negative]="(round.entries[player.id] ?? 0) < 0">
-                    {{ round.entries[player.id] === undefined ? '—' : (round.entries[player.id] | number:'1.0-2') }}
-                  </strong>
-                </footer>
-              </article>
-            </div>
-          </article>
-        </div>
-        <p class="score-note"><span>i</span> Totals add every round. All match data stays on this device.</p>
-      </section>
     </section>
 
-    <ng-template #landing>
-      <section class="landing-stage">
-        <div class="landing-art" aria-hidden="true">
-          <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div>
-          <div class="art-disc"><span class="disc-notch"></span><span class="disc-center">L</span></div>
-          <span class="floating-mark mark-a">04</span><span class="floating-mark mark-b">+</span>
-          <span class="art-caption">A TABLE IS NEVER JUST A TABLE</span>
-        </div>
-        <div class="landing-copy">
-          <p class="eyebrow">FOR THE ONES WHO KEEP SCORE</p>
-          <h2>One more hand.<br><em>One less argument.</em></h2>
-          <p class="landing-description">Rule-aware score sheets for Leekha, Hand, 400 and Tarneb. Your table calls the game; l4ht keeps the count.</p>
-          <button class="landing-cta" type="button" (click)="openNewMatch()">Start a match <span>↗</span></button>
-          <div class="landing-footnote"><span class="privacy-dot"></span> Your scores stay on this device. Always.</div>
-        </div>
-        <div class="game-ribbon"><span>LEEKHA</span><i>·</i><span>HAND</span><i>·</i><span>400</span><i>·</i><span>TARNEB</span></div>
-      </section>
-    </ng-template>
+
+    <!-- ========================================================= -->
+<!-- GAME OVER POPUP MODAL & ROUND BREAKDOWN                   -->
+<!-- ========================================================= -->
+
+<div class="dialog-backdrop" *ngIf="match.finished">
+  <section class="dialog-card summary-modal" role="dialog" aria-modal="true">
+    
+    <header class="summary-header">
+      <span class="trophy-icon">🏆</span>
+      <h2>Game Finished!</h2>
+      <p class="winner-msg">{{ match.winnerMessage }}</p>
+    </header>
+
+    <!-- Round-by-Round Breakdown Table -->
+    <div class="summary-table-wrapper" *ngIf="match.rounds.length">
+      <p class="panel-label">Match Recap</p>
+      
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Round</th>
+            <th *ngFor="let p of match.players">{{ p.name }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of match.rounds; let i = index">
+            <td>#{{ i + 1 }}</td>
+            <td *ngFor="let p of match.players">
+              {{ roundScore(match, r, p.id) }}
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td>Total</td>
+            <td *ngFor="let p of match.players" [class.neg]="(totals[p.id] || 0) < 0">
+              <strong>{{ totals[p.id] || 0 }}</strong>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- Actions -->
+    <div class="summary-actions">
+      <button 
+        class="dialog-secondary" 
+        type="button" 
+        (click)="backToMatches()">
+        Home
+      </button>
+
+      <button 
+        class="dialog-primary" 
+        type="button" 
+        (click)="requestClearAllRounds(match)">
+        Restart Game
+      </button>
+    </div>
+
+  </section>
+</div>
+
+    <!-- ========================================================= -->
+    <!-- CURRENT ROUND                                             -->
+    <!-- ========================================================= -->
+
+    <section
+      class="round"
+      *ngIf="currentRound as round; else noRound">
+
+      <div class="round-head">
+
+        <button
+          class="round-label"
+          type="button"
+          (click)="openEditRound(round)">
+
+          {{ round.label }}
+
+          <small>
+            {{ roundIdx + 1 }}/{{ match.rounds.length }}
+          </small>
+
+        </button>
+
+
+        <button
+          class="icon-btn sm"
+          type="button"
+          (click)="prevRound()"
+          [disabled]="roundIdx <= 0"
+          aria-label="Previous round">
+
+          ‹
+
+        </button>
+
+
+        <button
+          class="icon-btn sm"
+          type="button"
+          (click)="nextRound()"
+          [disabled]="roundIdx >= match.rounds.length - 1"
+          aria-label="Next round">
+
+          ›
+
+        </button>
+
+
+        <button
+          class="icon-btn sm danger"
+          type="button"
+          (click)="requestDeleteRound(round)"
+          aria-label="Delete round">
+
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+
+            <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/>
+
+          </svg>
+
+        </button>
+
+      </div>
+
+
+      <!-- ========================================================= -->
+      <!-- LEEKHA                                                    -->
+      <!-- ========================================================= -->
+
+      <ng-container *ngIf="match.game === 'Leekha'">
+
+  <div
+    class="empty"
+    *ngIf="match.players.length !== 4">
+
+    <p class="empty-title">
+      4 players required.
+    </p>
+
+    <p>
+      Leekha requires exactly four players.
+    </p>
+
   </div>
 
-  <div class="dialog-backdrop" *ngIf="dialog" (click)="cancelDialog()" role="presentation">
-    <section class="dialog-card" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
-      [attr.aria-labelledby]="'dialog-title'">
-      <button class="dialog-close" type="button" (click)="cancelDialog()" aria-label="Close dialog">×</button>
-      <ng-container [ngSwitch]="dialog">
-        <div *ngSwitchCase="'new-match'">
-          <p class="dialog-eyebrow">A FRESH SHEET</p>
-          <h2 id="dialog-title">What are we<br>playing?</h2>
-          <p class="dialog-description">Choose a game to load its scoring controls.</p>
-          <div class="game-options">
-            <button *ngFor="let game of games" type="button" class="game-option" [class.chosen]="gameDraft === game"
-              (click)="gameDraft = game"><span>{{ game.slice(0, 1) }}</span>{{ game }}<i *ngIf="gameDraft === game">✓</i></button>
+
+  <ng-container *ngIf="match.players.length === 4">
+
+    <div class="rows">
+
+      <div
+        class="row swipeable-row"
+        *ngFor="let player of match.players"
+        [class.swiping]="swipingPlayerId === player.id"
+        [style.transform]="swipingPlayerId === player.id ? 'translateX(-' + swipeOffset + 'px)' : 'translateX(0px)'"
+        (mousedown)="onSwipeStart($event, player.id)"
+        (mousemove)="onSwipeMove($event, player.id)"
+        (mouseup)="onSwipeEnd($event, round, player.id)"
+        (mouseleave)="onSwipeEnd($event, round, player.id)"
+        (touchstart)="onSwipeStart($event, player.id)"
+        (touchmove)="onSwipeMove($event, player.id)"
+        (touchend)="onSwipeEnd($event, round, player.id)">
+
+        <div class="row-name">
+          <strong>
+            {{ player.name }}
+          </strong>
+          <small>
+            {{ heartsFor(round, player.id) }} ♥
+          </small>
+        </div>
+
+        <!-- Swipe indicator badge (shows "Reset ↺" if player already has 36, otherwise "Sweep 36 ★") -->
+        <div 
+          class="swipe-badge" 
+          *ngIf="swipingPlayerId === player.id && swipeOffset > 25"
+          [class.reset-badge]="heartsFor(round, player.id) === 13 && round.queenPlayerId === player.id && round.tenDiamondPlayerId === player.id">
+          {{ (heartsFor(round, player.id) === 13 && round.queenPlayerId === player.id && round.tenDiamondPlayerId === player.id) ? 'Reset ↺' : 'Sweep 36 ★' }}
+        </div>
+
+        <div class="leekha-card-controls">
+          <!-- Stepper & Card Toggles -->
+          <div class="stepper">
+            <button type="button" [disabled]="heartsFor(round, player.id) <= 0" (click)="stepHearts(round, player.id, -1)">−</button>
+            <input type="number" inputmode="numeric" pattern="[0-9]*"  min="0" [max]="maxHeartsForPlayer(round, player.id)" step="1" [value]="heartsFor(round, player.id)" (change)="setHearts(round, player.id, $any($event.target).value)">
+            <button type="button" [disabled]="heartsFor(round, player.id) >= maxHeartsForPlayer(round, player.id)" (click)="stepHearts(round, player.id, 1)">+</button>
           </div>
-          <button class="dialog-primary" type="button" (click)="createMatch()">Set the table <span>↗</span></button>
+
+          <button type="button" class="card-toggle" [class.on]="round.queenPlayerId === player.id" (click)="toggleQueen(round, player.id)">Q♠</button>
+          <button type="button" class="card-toggle" [class.on]="round.tenDiamondPlayerId === player.id" (click)="toggleTenDiamond(round, player.id)">10♦</button>
         </div>
-        <div *ngSwitchCase="'add-player'">
-          <p class="dialog-eyebrow">AT THE TABLE</p>
-          <h2 id="dialog-title">Who’s in?</h2>
-          <p class="dialog-description">{{ activeMatch && isContractGame(activeMatch.game) ? '400 and Tarneb use four players in two pairs.' : 'Add one player at a time. Names stay on this device.' }}</p>
-          <label class="field-label" for="player-name">PLAYER NAME</label>
-          <input id="player-name" class="dialog-input" [(ngModel)]="nameDraft" (keyup.enter)="addPlayer()" placeholder="e.g. Rima" autofocus>
-          <button class="dialog-primary" type="button" (click)="addPlayer()" [disabled]="!nameDraft.trim() || !activeMatch || !canAddPlayer(activeMatch)">Add player <span>↗</span></button>
+
+      </div>
+
+    </div>
+
+    <div class="round-summary">
+
+      <span>
+        Hearts:
+        <strong>
+          {{ totalHearts(round) }}/13
+        </strong>
+      </span>
+
+      <span>
+        Q♠:
+        <strong>
+          {{ round.queenPlayerId ? '✓' : '—' }}
+        </strong>
+      </span>
+
+      <span>
+        10♦:
+        <strong>
+          {{ round.tenDiamondPlayerId ? '✓' : '—' }}
+        </strong>
+      </span>
+
+      <span>
+        Total:
+        <strong>
+          {{ leekhaRoundTotal(round) }}/36
+        </strong>
+      </span>
+
+    </div>
+
+
+    <div class="empty">
+
+      <p
+        class="empty-title"
+        *ngIf="!leekhaRoundComplete(match, round)">
+
+      </p>
+
+      <p
+        class="empty-title"
+        *ngIf="leekhaRoundComplete(match, round)">
+
+        ✓ Round is valid
+
+      </p>
+
+    </div>
+
+  </ng-container>
+
+</ng-container>
+
+
+      <!-- ========================================================= -->
+      <!-- TARNEEB (PARTNERS 2-TEAM BIDDING)                        -->
+      <!-- ========================================================= -->
+
+      <ng-container *ngIf="match.game === 'Tarneb'">
+
+        <div
+          class="empty"
+          *ngIf="match.players.length !== 4">
+
+          <p class="empty-title">
+            4 players required.
+          </p>
+
+          <p>
+            Tarneeb requires 4 players (Team 1: P1 & P3, Team 2: P2 & P4).
+          </p>
+
         </div>
-        <div *ngSwitchCase="'rename-player'">
-          <p class="dialog-eyebrow">UPDATE THE SHEET</p>
-          <h2 id="dialog-title">A new name?</h2>
-          <p class="dialog-description">This updates the name everywhere in this match.</p>
-          <label class="field-label" for="rename-name">PLAYER NAME</label>
-          <input id="rename-name" class="dialog-input" [(ngModel)]="nameDraft" (keyup.enter)="renamePlayer()">
-          <button class="dialog-primary" type="button" (click)="renamePlayer()" [disabled]="!nameDraft.trim()">Save name <span>↗</span></button>
-        </div>
-        <div *ngSwitchCase="'round'">
-          <p class="dialog-eyebrow">THE SCORE SHEET</p>
-          <h2 id="dialog-title">Name this round.</h2>
-          <p class="dialog-description">Call it anything that makes sense at your table.</p>
-          <label class="field-label" for="round-name">ROUND LABEL</label>
-          <input id="round-name" class="dialog-input" [(ngModel)]="roundLabelDraft" (keyup.enter)="saveRoundLabel()">
-          <button class="dialog-primary" type="button" (click)="saveRoundLabel()" [disabled]="!roundLabelDraft.trim()">Save label <span>↗</span></button>
-        </div>
-        <div *ngSwitchCase="'confirm'">
-          <p class="dialog-eyebrow danger-eyebrow">BEFORE YOU DO</p>
-          <h2 id="dialog-title">{{ confirmTitle }}</h2>
-          <p class="dialog-description">{{ confirmMessage }}</p>
-          <div class="dialog-actions">
-            <button class="dialog-secondary" type="button" (click)="cancelDialog()">Keep it</button>
-            <button class="dialog-danger" type="button" (click)="confirm()">Delete</button>
+
+
+        <div
+          class="rows"
+          *ngIf="match.players.length === 4">
+
+          <!-- 1. Bidding Team Selection -->
+          <div class="tarneeb-bid-box">
+            <p class="panel-label">Which team took the bid?</p>
+
+            <div class="manage-row">
+              <select 
+                class="dialog-input"
+                [value]="round.biddingTeam !== undefined ? round.biddingTeam : ''"
+                (change)="setTarneebBiddingTeam(round, $any($event.target).value)">
+                <option value="" disabled>Select Bidding Team</option>
+                <option [value]="0">
+                  {{ match.players[0].name }} & {{ match.players[2].name }} (Team 1)
+                </option>
+                <option [value]="1">
+                  {{ match.players[1].name }} & {{ match.players[3].name }} (Team 2)
+                </option>
+              </select>
+
+              <select 
+                class="mini-select"
+                [disabled]="round.biddingTeam === undefined"
+                [value]="round.bidAmount || ''"
+                (change)="setTarneebBidAmount(round, $any($event.target).value)">
+                <option value="" disabled>Bid (7-13)</option>
+                <option *ngFor="let bid of [7,8,9,10,11,12,13]" [value]="bid">
+                  {{ bid === 13 ? '13 (Kaboot)' : bid }}
+                </option>
+              </select>
+            </div>
           </div>
+
+          <!-- 2. Result Selection -->
+          <div class="tarneeb-result-box" *ngIf="round.biddingTeam !== undefined && round.bidAmount">
+            <p class="panel-label">Did Team {{ round.biddingTeam + 1 }} make the bid?</p>
+
+            <div class="manage-row">
+              <button 
+                type="button" 
+                class="result-btn" 
+                [class.made]="round.bidMade === true"
+                (click)="setTarneebBidResult(match, round, true)">
+                Made (+{{ round.bidAmount }})
+              </button>
+
+              <button 
+                type="button" 
+                class="result-btn" 
+                [class.missed]="round.bidMade === false"
+                (click)="setTarneebBidResult(match, round, false)">
+                Missed (-{{ round.bidAmount }})
+              </button>
+            </div>
+
+            <!-- If missed, enter opponent tricks won -->
+            <div class="manage-row" *ngIf="round.bidMade === false">
+              <span>Team {{ (1 - round.biddingTeam) + 1 }} tricks won:</span>
+              <input 
+                type="number" 
+                inputmode="numeric"
+  pattern="[0-9]*"
+                min="0" 
+                max="13" 
+                class="dialog-input mini"
+                [value]="round.opponentTricks ?? ''"
+                (change)="setTarneebOpponentTricks(match, round, $any($event.target).value)">
+            </div>
+          </div>
+
         </div>
+
       </ng-container>
+
+
+      <!-- ========================================================= -->
+      <!-- 400                                                      -->
+      <!-- ========================================================= -->
+
+      <ng-container *ngIf="match.game === '400'">
+
+        <div
+          class="empty"
+          *ngIf="match.players.length !== 4">
+
+          <p class="empty-title">
+            4 players required.
+          </p>
+
+          <p>
+            400 requires exactly four players.
+          </p>
+
+        </div>
+
+
+        <div
+          class="rows"
+          *ngIf="match.players.length === 4">
+
+          <div
+            class="row"
+            *ngFor="let player of match.players">
+
+            <div class="row-name">
+
+              <strong>
+                {{ player.name }}
+              </strong>
+
+              <small>
+                Total:
+                {{ totals[player.id] || 0 }}
+              </small>
+
+            </div>
+
+
+            <div class="bid-controls">
+
+              <select
+                class="mini-select"
+                [value]="bidValue(round, player.id)"
+                (change)="setBidFromInput(
+                  round,
+                  player.id,
+                  $any($event.target).value
+                )">
+
+                <option
+                  value=""
+                  disabled>
+                  Ask
+                </option>
+
+                <option
+                  *ngFor="let bid of availableBids(player)"
+                  [value]="bid">
+
+                  {{ bid }}
+
+                </option>
+
+                <option value="full">
+                  Full Game
+                </option>
+
+              </select>
+
+
+              <button
+                type="button"
+                class="result-btn"
+                [class.made]="bidResult(round, player.id) === 'made'"
+                (click)="setBidResult(
+                  round,
+                  player.id,
+                  'made'
+                )">
+
+                Made
+
+              </button>
+
+
+              <button
+                type="button"
+                class="result-btn"
+                [class.missed]="bidResult(round, player.id) === 'missed'"
+                (click)="setBidResult(
+                  round,
+                  player.id,
+                  'missed'
+                )">
+
+                Missed
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="empty"
+          *ngIf="match.players.length === 4">
+
+          <p
+            class="empty-title"
+            *ngIf="!roundComplete(match, round)">
+
+          </p>
+
+          <p
+            class="empty-title"
+            *ngIf="roundComplete(match, round)">
+
+
+          </p>
+
+        </div>
+
+      </ng-container>
+
+
+      <!-- ========================================================= -->
+      <!-- HAND                                                      -->
+      <!-- ========================================================= -->
+
+      <ng-container *ngIf="match.game === 'Hand'">
+
+        <div
+          class="empty"
+          *ngIf="
+            match.players.length < 2 ||
+            match.players.length > 4
+          ">
+
+          <p class="empty-title">
+            Hand needs 2–4 players.
+          </p>
+
+        </div>
+
+
+        <ng-container
+          *ngIf="
+            match.players.length >= 2 &&
+            match.players.length <= 4
+          ">
+
+          <div class="rows">
+
+            <div
+              class="row"
+              *ngFor="let player of match.players">
+
+              <div class="row-name">
+
+                <strong>
+                  {{ player.name }}
+                </strong>
+
+                <small
+                  *ngIf="
+                    round.finishedPlayerId === player.id
+                  ">
+
+                  Finished
+                  {{ round.finishedWithHand ? '· Hand' : '' }}
+
+                </small>
+
+              </div>
+
+
+              <div class="hand-controls">
+
+                <div class="stepper">
+
+                  <button
+                    type="button"
+                    (click)="stepScore(
+                      round,
+                      player.id,
+                      -1
+                    )">
+
+                    −
+
+                  </button>
+
+                  <input
+  type="number"
+  inputmode="numeric"
+  pattern="[0-9]*"
+  min="0"
+  step="1"
+  [value]="round.entries[player.id] ?? ''"
+  (change)="setScore(
+    round,
+    player.id,
+    $any($event.target).value
+  )">
+
+                  <button
+                    type="button"
+                    (click)="stepScore(
+                      round,
+                      player.id,
+                      1
+                    )">
+
+                    +
+
+                  </button>
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="result-btn"
+                  [class.made]="round.finishedPlayerId === player.id"
+                  (click)="setHandFinishedPlayer(
+                    round,
+                    player.id
+                  )">
+
+                  {{
+                    round.finishedPlayerId === player.id
+                      ? 'Finished'
+                      : 'Finish'
+                  }}
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div
+            class="hand-type"
+            *ngIf="round.finishedPlayerId">
+
+            <button
+              type="button"
+              class="result-btn"
+              [class.made]="!round.finishedWithHand"
+              (click)="setHandFinishType(round, false)">
+
+              Normal −30
+
+            </button>
+
+            <button
+              type="button"
+              class="result-btn"
+              [class.made]="round.finishedWithHand"
+              (click)="setHandFinishType(round, true)">
+
+              Hand −60
+
+            </button>
+
+          </div>
+
+
+          <div class="empty">
+
+            <p
+              class="empty-title"
+              *ngIf="!handRoundComplete(match, round)">
+
+            </p>
+
+            <p
+              class="empty-title"
+              *ngIf="handRoundComplete(match, round)">
+
+
+            </p>
+
+          </div>
+
+        </ng-container>
+
+      </ng-container>
+
     </section>
+
+
+    <!-- ========================================================= -->
+    <!-- NO ROUND YET                                              -->
+    <!-- ========================================================= -->
+
+    <ng-template #noRound>
+
+      <section class="empty">
+
+        <p class="empty-title">
+          Ready to play.
+        </p>
+
+        <p>
+          {{
+            match.game === 'Hand'
+              ? 'Hand has exactly 7 rounds.'
+              : 'Start the first round when the game begins.'
+          }}
+        </p>
+
+      </section>
+
+    </ng-template>
+
+
+    <!-- ========================================================= -->
+    <!-- BOTTOM ACTION                                             -->
+    <!-- ========================================================= -->
+
+    <footer class="dock">
+
+      <!-- Shown on Round 7 when the round is complete -->
+      <button
+        *ngIf="isLastRound(match, activeRoundFor(match)) && handRoundComplete(match, activeRoundFor(match)) && !match.finished"
+        class="primary finish-btn"
+        type="button"
+        (click)="finishGame(match, activeRoundFor(match))">
+        Finish Game 🏆
+      </button>
+
+      <!-- Default New Round / Start Round button -->
+      <button
+        *ngIf="!(isLastRound(match, activeRoundFor(match)) && handRoundComplete(match, activeRoundFor(match)) && !match.finished)"
+        class="primary"
+        type="button"
+        (click)="addRound()"
+        [disabled]="!canStartRound(match) || match.finished">
+
+        {{
+          match.finished
+            ? 'Game finished'
+            : match.rounds.length === 0
+              ? '+ Start first round'
+              : '+ New round'
+        }}
+
+      </button>
+
+    </footer>
+
+  </ng-container>
+
+
+  <!-- =========================================================== -->
+  <!-- MATCH LIST                                                   -->
+  <!-- =========================================================== -->
+
+  <ng-template #matchList>
+
+    <header class="list-head">
+
+      <div class="brand">
+
+        <span class="brand-mark">
+          ل
+        </span>
+
+        <div class="brand-container">
+          <span class="brand-word">l4ht<span class="brand-period">.</span></span>
+          <span class="brand-credit">Made by Sajed Sleiman</span>
+        </div>
+
+      </div>
+
+      <h1>
+        Your matches
+
+        <span class="count">
+          {{ matches.length ? ' · ' + matches.length : '' }}
+        </span>
+      </h1>
+
+    </header>
+
+
+    <button
+      class="primary start"
+      type="button"
+      (click)="openNewMatch()">
+
+      + Start a new match
+
+    </button>
+
+
+    <div
+      class="match-list"
+      *ngIf="matches.length; else noMatches">
+
+      <div
+        class="match-item"
+        *ngFor="let match of matches"
+        role="button"
+        tabindex="0"
+        (click)="selectMatch(match)"
+        (keydown.enter)="selectMatch(match)"
+        (keydown.space)="
+          $event.preventDefault();
+          selectMatch(match)
+        ">
+
+        <span class="game-stamp">
+          {{ match.game.slice(0, 1) }}
+        </span>
+
+        <span class="match-copy">
+
+          <strong>
+            {{ match.game }}
+          </strong>
+
+          <small>
+
+            {{ formatDate(match.createdAt) }}
+            ·
+            {{ match.rounds.length }}
+            {{ match.rounds.length === 1 ? 'round' : 'rounds' }}
+            ·
+            {{ match.players.length }} players
+
+            <ng-container *ngIf="match.finished">
+              · Finished
+            </ng-container>
+
+          </small>
+
+        </span>
+
+
+        <button
+          class="delete-match"
+          type="button"
+          aria-label="Delete match"
+          (click)="requestDeleteMatch(match, $event)">
+
+          ×
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <ng-template #noMatches>
+
+      <section class="empty">
+
+        <p class="empty-title">
+          No score sheets yet.
+        </p>
+
+        <p>
+          Leekha, Hand, 400 and Tarneb.
+          Your scores stay on this device.
+        </p>
+
+      </section>
+
+    </ng-template>
+
+  </ng-template>
+
+
+  <!-- =========================================================== -->
+  <!-- DIALOGS                                                      -->
+  <!-- =========================================================== -->
+
+  <div
+    class="dialog-backdrop"
+    *ngIf="dialog"
+    (click)="cancelDialog()">
+
+    <section
+      class="dialog-card"
+      (click)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true">
+
+      <button
+        class="dialog-close"
+        type="button"
+        (click)="cancelDialog()">
+
+        ×
+
+      </button>
+
+
+      <!-- NEW MATCH -->
+
+      <div *ngIf="dialog === 'new-match'">
+
+        <h2>
+          What are we playing?
+        </h2>
+
+        <p class="dialog-description">
+          Choose the game.
+        </p>
+
+
+        <div class="game-options">
+
+          <button
+            *ngFor="let game of games"
+            type="button"
+            class="game-option"
+            [class.chosen]="gameDraft === game"
+            (click)="gameDraft = game">
+
+            <span>
+              {{ game.slice(0, 1) }}
+            </span>
+
+            {{ game }}
+
+            <i *ngIf="gameDraft === game">
+              ✓
+            </i>
+
+          </button>
+
+        </div>
+
+
+        <ng-container *ngIf="gameDraft === 'Leekha'">
+
+          <p class="panel-label">
+            Leekha mode
+          </p>
+
+          <div class="game-options">
+
+            <button
+              type="button"
+              class="game-option"
+              [class.chosen]="leekhaPartners"
+              (click)="leekhaPartners = true">
+
+              <span>2</span>
+
+              Partners
+
+              <i *ngIf="leekhaPartners">
+                ✓
+              </i>
+
+            </button>
+
+
+            <button
+              type="button"
+              class="game-option"
+              [class.chosen]="!leekhaPartners"
+              (click)="leekhaPartners = false">
+
+              <span>4</span>
+
+              Individual
+
+              <i *ngIf="!leekhaPartners">
+                ✓
+              </i>
+
+            </button>
+
+          </div>
+
+        </ng-container>
+
+
+        <button
+          class="dialog-primary"
+          type="button"
+          (click)="createMatch()">
+
+          Set the table
+
+        </button>
+
+      </div>
+
+
+      <!-- ADD PLAYER -->
+
+      <div *ngIf="dialog === 'add-player'">
+
+        <h2>
+          Who’s in?
+        </h2>
+
+        <p class="dialog-description">
+
+          {{
+            activeMatch?.game === 'Hand'
+              ? 'Hand allows 2–4 players.'
+              : 'This game requires exactly 4 players.'
+          }}
+
+        </p>
+
+
+        <label
+          class="field-label"
+          for="player-name">
+
+          Player name
+
+        </label>
+
+
+        <input
+          id="player-name"
+          class="dialog-input"
+          [(ngModel)]="nameDraft"
+          (keyup.enter)="addPlayer()"
+          placeholder="e.g. Sajed"
+          autofocus>
+
+
+        <button
+          class="dialog-primary"
+          type="button"
+          (click)="addPlayer()"
+          [disabled]="
+            !nameDraft.trim() ||
+            !activeMatch ||
+            !canAddPlayer(activeMatch)
+          ">
+
+          Add player
+
+        </button>
+
+      </div>
+
+
+      <!-- RENAME -->
+
+      <div *ngIf="dialog === 'rename-player'">
+
+        <h2>
+          A new name?
+        </h2>
+
+        <label
+          class="field-label"
+          for="rename-name">
+
+          Player name
+
+        </label>
+
+
+        <input
+          id="rename-name"
+          class="dialog-input"
+          [(ngModel)]="nameDraft"
+          (keyup.enter)="renamePlayer()">
+
+
+        <button
+          class="dialog-primary"
+          type="button"
+          (click)="renamePlayer()"
+          [disabled]="!nameDraft.trim()">
+
+          Save name
+
+        </button>
+
+      </div>
+
+
+      <!-- ROUND NAME -->
+
+      <div *ngIf="dialog === 'round'">
+
+        <h2>
+          Name this round.
+        </h2>
+
+        <label
+          class="field-label"
+          for="round-name">
+
+          Round label
+
+        </label>
+
+
+        <input
+          id="round-name"
+          class="dialog-input"
+          [(ngModel)]="roundLabelDraft"
+          (keyup.enter)="saveRoundLabel()">
+
+
+        <button
+          class="dialog-primary"
+          type="button"
+          (click)="saveRoundLabel()"
+          [disabled]="!roundLabelDraft.trim()">
+
+          Save label
+
+        </button>
+
+      </div>
+
+
+      <!-- CONFIRM -->
+
+      <div *ngIf="dialog === 'confirm'">
+
+        <h2>
+          {{ confirmTitle }}
+        </h2>
+
+        <p class="dialog-description">
+          {{ confirmMessage }}
+        </p>
+
+
+        <div class="dialog-actions">
+
+          <button
+            class="dialog-secondary"
+            type="button"
+            (click)="cancelDialog()">
+
+            Keep it
+
+          </button>
+
+
+          <button
+            class="dialog-danger"
+            type="button"
+            (click)="confirm()">
+
+            Delete
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
   </div>
+
+  <!-- Victory Video Modal Overlay -->
+  <div class="video-overlay" *ngIf="showWinVideo">
+    <div class="video-container">
+      <button type="button" class="close-btn" (click)="closeWinVideo()" aria-label="Close video">
+        &times;
+      </button>
+
+      <video
+        #winVideo
+        autoplay
+        playsinline
+        webkit-playsinline
+        preload="auto"
+        src="assets/win-video.mp4"
+        (ended)="closeWinVideo()">
+        Your browser does not support video playback.
+      </video>
+    </div>
+  </div>
+
 </main>
