@@ -1,0 +1,54 @@
+{
+  "configVersion": 1,
+  "timestamp": 1791972300895,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "application",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/favicon.svg",
+        "/icons/icon.svg",
+        "/index.html",
+        "/main-627EOFS7.js",
+        "/manifest.webmanifest",
+        "/polyfills-IOO3XMUJ.js",
+        "/styles-5BUW25XO.css"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/favicon.svg": "62f728e4ad3cb0641e379175187268c8f0ba492e",
+    "/icons/icon.svg": "592152675fdefba33a9e6d0467e853b8046beb5b",
+    "/index.html": "c6647c9a9b43b026325270d1d3e098734569dd1d",
+    "/main-627EOFS7.js": "dc3afed44db10fbb4741b2050f181299c3965f5a",
+    "/manifest.webmanifest": "3df28cb17a2828284437521d21acfd80b4a62fee",
+    "/polyfills-IOO3XMUJ.js": "f2241e9a25858f895ce299d15f6f22e849e2fd72",
+    "/styles-5BUW25XO.css": "7d1c2a44ae0844130173c885dbc95f9565c64e51"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}

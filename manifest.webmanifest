@@ -1,0 +1,17 @@
+{
+  "name": "l4ht",
+  "short_name": "l4ht",
+  "description": "A private score sheet for Leekha, Hand, 400, and Tarneb.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f5f1",
+  "theme_color": "#172a24",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
